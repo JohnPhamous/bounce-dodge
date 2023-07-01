@@ -1,5 +1,10 @@
+import { Room } from "@/app/Room";
 import { Game } from "@/components/game";
 
 export default function Home() {
-  return <Game />;
+  return (
+    <Room>
+      <Game />
+    </Room>
+  );
 }

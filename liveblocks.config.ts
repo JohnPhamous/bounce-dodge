@@ -1,10 +1,8 @@
 import { createClient } from "@liveblocks/client";
 import { createRoomContext } from "@liveblocks/react";
-  
+
 const client = createClient({
-  // publicApiKey: "",
-  // authEndpoint: "/api/auth",
-  // throttle: 100,
+  publicApiKey: process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY!,
 });
 
 // Presence represents the properties that exist on every user in the Room
@@ -13,6 +11,7 @@ const client = createClient({
 type Presence = {
   // cursor: { x: number, y: number } | null,
   // ...
+  username: string | undefined;
 };
 
 // Optionally, Storage represents the shared document that persists in the
@@ -66,5 +65,5 @@ export const {
     useMutation,
     useStatus,
     useLostConnectionListener,
-  }
+  },
 } = createRoomContext<Presence, Storage, UserMeta, RoomEvent>(client);

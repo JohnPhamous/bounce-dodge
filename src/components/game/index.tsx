@@ -3,18 +3,25 @@
 import { Canvas } from "@/components/canvas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { GameState, TargetEntity } from "@/types";
 import React, { useState } from "react";
+import {
+  useOthers,
+  useUpdateMyPresence,
+  useSelf,
+} from "../../../liveblocks.config";
+import { AnimatePresence, motion } from "framer-motion";
 
 export function Game(): JSX.Element {
+  const others = useOthers();
+  const updateMyPresence = useUpdateMyPresence();
+  const self = useSelf();
   const [gameState, setGameState] = useState<GameState>("pregame");
   const [targets, setTargets] = useState<TargetEntity[]>([]);
   const [eliminatedTargets, setEliminatedTargets] = useState<TargetEntity[]>(
     []
   );
-  const [username, setUsername] = useState("boba");
 
   const onAddTarget = ({
     initialCoordinates,
@@ -23,7 +30,11 @@ export function Game(): JSX.Element {
     setTargets((prev) => [
       ...prev,
       //       TODO: use ID generator
-      { id: Math.random().toString(), initialCoordinates, value: username },
+      {
+        id: Math.random().toString(),
+        initialCoordinates,
+        value: self.presence.username || "",
+      },
     ]);
   };
 
@@ -42,15 +53,33 @@ export function Game(): JSX.Element {
             Bounce Dodge
           </h2>
           <div className="ml-auto flex w-full space-x-2 sm:justify-end">
+            {/* Avatar Stack */}
+            <div className="flex items-center group">
+              <AnimatePresence presenceAffectsLayout mode="popLayout">
+                {others
+                  .filter((other) => other.presence.username !== undefined)
+                  .map((other) => {
+                    return (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, y: 32 }}
+                        key={other.connectionId}
+                        className="ml-[-11px] bg-slate-500 border-2 border-slate-50 h-[32px] w-[32px] rounded-full flex items-center justify-center text-white group-hover:ml-[2px] transition-[margin] uppercase"
+                      >
+                        {other.presence.username?.slice(0, 1)}
+                      </motion.div>
+                    );
+                  })}
+              </AnimatePresence>
+            </div>
             <div className="flex flex-row items-center gap-4">
-              <Label htmlFor="username" className="w-fit">
-                Username
-              </Label>
               <Input
+                aria-label="Username"
                 id="username"
-                value={username}
+                value={self.presence.username}
                 onChange={(e) => {
-                  setUsername(e.target.value);
+                  updateMyPresence({ username: e.target.value });
                 }}
                 className="col-span-2 h-8"
               />
