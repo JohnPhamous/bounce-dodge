@@ -1,7 +1,18 @@
-import { GAME_STATE } from "@/types";
+import { GameState, TargetEntity } from "@/types";
+import { AnimatePresence, motion } from "framer-motion";
 import React, { useLayoutEffect, useRef, useState } from "react";
 
-export function Canvas({ gameState }: { gameState: GAME_STATE }): JSX.Element {
+export function Canvas({
+  gameState,
+  onAddTarget,
+  targets,
+  onEndGame,
+}: {
+  gameState: GameState;
+  onAddTarget: (newTarget: Omit<TargetEntity, "id">) => void;
+  targets: TargetEntity[];
+  onEndGame: (collidedTarget: TargetEntity) => void;
+}): JSX.Element {
   const [xDirection, setXDirection] = useState(Math.random() * 2 - 1);
   const [yDirection, setYDirection] = useState(Math.random() * 2 - 1);
   const attackerRef = useRef<HTMLDivElement>(null);
@@ -46,6 +57,11 @@ export function Canvas({ gameState }: { gameState: GAME_STATE }): JSX.Element {
         attackerRect
       );
 
+      const collidedWithTarget = getCollision(attackerRect, targets);
+      if (collidedWithTarget !== undefined) {
+        onEndGame(collidedWithTarget);
+      }
+
       if (
         attackerCoordinates.x + xDirection >
           canvasRect.width - attackerRect.width ||
@@ -70,23 +86,82 @@ export function Canvas({ gameState }: { gameState: GAME_STATE }): JSX.Element {
     };
     renderFunction();
     return () => cancelAnimationFrame(animationFrameId);
-  }, [gameState, xDirection, yDirection]);
+  }, [gameState, xDirection, yDirection, targets, onEndGame]);
 
   return (
-    <div className="bg-slate-400 h-full w-full relative" ref={canvasRef}>
-      <Object ref={attackerRef} />
+    <div
+      className="bg-slate-400 h-full w-full relative"
+      ref={canvasRef}
+      onClick={(e) => {
+        if (canvasRef.current === null || gameState !== "pregame") {
+          return;
+        }
+
+        const clickCoordinates = { x: e.clientX, y: e.clientY };
+        const canvas = canvasRef.current;
+        const canvasRect = canvas.getBoundingClientRect();
+
+        let initialX = clickCoordinates.x - canvasRect.left;
+        let initialY = clickCoordinates.y - canvasRect.top;
+
+        // TODO: do bounds checking
+
+        onAddTarget({
+          value: "TODO",
+          initialCoordinates: {
+            initialX,
+            initialY,
+          },
+        });
+      }}
+    >
+      <Object ref={attackerRef} label="ATTACKER" />
+      <AnimatePresence>
+        {targets.map((target) => {
+          return (
+            <Object
+              id={target.id}
+              key={target.id}
+              initialX={target.initialCoordinates.initialX}
+              initialY={target.initialCoordinates.initialY}
+              label={target.value}
+            />
+          );
+        })}
+      </AnimatePresence>
     </div>
   );
 }
 
-const Object = React.forwardRef<HTMLDivElement>((_props, ref) => {
+const Object = React.forwardRef<
+  HTMLDivElement,
+  { initialX?: number; initialY?: number; label?: string; id?: string }
+>(({ initialX = 0, initialY = 0, label = "TARGET", id }, ref) => {
   return (
-    <div
-      className="bg-red-400 h-24 w-24 absolute top-[var(--y)] left-[var(--x)]"
+    <motion.div
+      initial={{
+        scale: 0,
+      }}
+      animate={{
+        scale: 1,
+      }}
+      exit={{
+        scale: 0,
+      }}
+      id={id}
+      className={`${
+        label === "ATTACKER" ? "bg-red-400" : "bg-blue-400"
+      } h-24 w-24 absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))]`}
       ref={ref}
+      style={
+        {
+          "--initial-x": `${initialX}px`,
+          "--initial-y": `${initialY}px`,
+        } as React.CSSProperties
+      }
     >
-      yo
-    </div>
+      {label}
+    </motion.div>
   );
 });
 
@@ -106,3 +181,18 @@ const setPosition = (
   element.style.setProperty("--x", `${x}px`);
   element.style.setProperty("--y", `${y}px`);
 };
+
+function getCollision(attackerRect: DOMRect, targets: TargetEntity[]) {
+  const collidedTarget = targets.find((target) => {
+    const targetElement = document.getElementById(target.id)!;
+    const targetRect = targetElement.getBoundingClientRect();
+
+    return !(
+      targetRect.left > attackerRect.right ||
+      targetRect.right < attackerRect.left ||
+      targetRect.top > attackerRect.bottom ||
+      targetRect.bottom < attackerRect.top
+    );
+  });
+  return collidedTarget;
+}
