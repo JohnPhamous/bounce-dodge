@@ -39,6 +39,9 @@ export function Canvas({
   const canvasRef = useRef<HTMLDivElement>(null);
 
   useEventListener(({ connectionId, event }) => {
+    if (!isAdmin) {
+      return;
+    }
     let xDelta = 0;
     let yDelta = 0;
     const MAGNITUDE = 0.2;
