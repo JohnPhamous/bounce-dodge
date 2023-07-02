@@ -35,8 +35,7 @@ type UserMeta = {
 // Optionally, the type of custom events broadcast and listened to in this
 // room. Use a union for multiple events. Must be JSON-serializable.
 type RoomEvent = {
-  // type: "NOTIFICATION",
-  // ...
+  type: "up" | "left" | "right" | "down";
 };
 
 export const {

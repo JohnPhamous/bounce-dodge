@@ -1,7 +1,15 @@
 import { GameState, TargetEntity } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useLayoutEffect, useRef, useState } from "react";
-import { useMutation, useSelf, useStorage } from "../../../liveblocks.config";
+import {
+  useBroadcastEvent,
+  useEventListener,
+  useMutation,
+  useOthers,
+  useSelf,
+  useStorage,
+} from "../../../liveblocks.config";
+import { Button } from "@/components/ui/button";
 
 export function Canvas({
   gameState,
@@ -15,6 +23,7 @@ export function Canvas({
   onRemoveTarget: (collidedTarget: TargetEntity) => void;
 }): JSX.Element {
   const self = useSelf();
+  const others = useOthers();
   const isAdmin = self.presence.username === "johnphamous";
   const attackerPosition = useStorage((root) => root.attacker);
   const updateAttackerPosition = useMutation(
@@ -23,10 +32,36 @@ export function Canvas({
     },
     []
   );
+  const broadcast = useBroadcastEvent();
   const [xDirection, setXDirection] = useState(Math.random() * 2 - 1);
   const [yDirection, setYDirection] = useState(Math.random() * 2 - 1);
   const attackerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  useEventListener(({ connectionId, event }) => {
+    let xDelta = 0;
+    let yDelta = 0;
+    const MAGNITUDE = 0.2;
+
+    switch (event.type) {
+      case "up":
+        yDelta = -MAGNITUDE;
+        break;
+      case "down":
+        yDelta = MAGNITUDE;
+        break;
+      case "left":
+        xDelta = -MAGNITUDE;
+        break;
+      case "right":
+        xDelta = MAGNITUDE;
+        break;
+    }
+
+    setXDirection((prev) => prev + xDelta);
+    setYDirection((prev) => prev + yDelta);
+    console.log(connectionId, event, others);
+  });
 
   // Centers the attacker in the canvas before the game starts.
   useLayoutEffect(() => {
@@ -155,7 +190,41 @@ export function Canvas({
         x={isAdmin ? undefined : attackerPosition.x}
         y={isAdmin ? undefined : attackerPosition.y}
         hidden={gameState !== "playing"}
-      />
+        className="group"
+      >
+        <InfluenceButton
+          className="absolute top-0 left-0 right-0 mx-auto w-fit translate-y-[calc(-100%-6px)]"
+          onClick={() => {
+            broadcast({ type: "up" });
+          }}
+        >
+          ☝️
+        </InfluenceButton>
+        <InfluenceButton
+          className="absolute top-0 bottom-0 right-0 my-auto w-fit translate-x-[calc(100%+6px)]"
+          onClick={() => {
+            broadcast({ type: "right" });
+          }}
+        >
+          🫱
+        </InfluenceButton>
+        <InfluenceButton
+          className="absolute bottom-0 left-0 right-0 mx-auto w-fit translate-y-[calc(100%+6px)]"
+          onClick={() => {
+            broadcast({ type: "down" });
+          }}
+        >
+          👇
+        </InfluenceButton>
+        <InfluenceButton
+          className="absolute top-0 bottom-0 left-0 my-auto w-fit translate-x-[calc(-100%-6px)]"
+          onClick={() => {
+            broadcast({ type: "left" });
+          }}
+        >
+          🫲
+        </InfluenceButton>
+      </Object>
       <AnimatePresence>
         {targets.map((target) => {
           return (
@@ -183,43 +252,61 @@ const Object = React.forwardRef<
     x?: number;
     y?: number;
     hidden?: boolean;
+    children?: React.ReactNode;
+    className?: string;
   }
->(({ initialX = 0, initialY = 0, label = "TARGET", id, x, y, hidden }, ref) => {
-  return (
-    <motion.div
-      initial={{
-        scale: 0,
-      }}
-      animate={{
-        scale: 1,
-        opacity: hidden ? 0 : 1,
-        transition: {
-          duration: hidden ? 0 : undefined,
-        },
-      }}
-      exit={{
-        scale: 0,
-      }}
-      id={id}
-      className={`${
-        label === "ATTACKER" ? "bg-red-400" : "bg-blue-400"
-      } h-24 w-24 absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))] ${
-        x !== undefined ? "transition-all" : undefined
-      }`}
-      ref={ref}
-      style={
-        {
-          "--initial-x": `${initialX}px`,
-          "--initial-y": `${initialY}px`,
-          "--x": x !== undefined ? `${x}px` : undefined,
-          "--y": y !== undefined ? `${y}px` : undefined,
-        } as React.CSSProperties
-      }
-    >
-      {label}
-    </motion.div>
-  );
-});
+>(
+  (
+    {
+      initialX = 0,
+      initialY = 0,
+      label = "TARGET",
+      id,
+      x,
+      y,
+      hidden,
+      children,
+      className,
+    },
+    ref
+  ) => {
+    return (
+      <motion.div
+        initial={{
+          scale: 0,
+        }}
+        animate={{
+          scale: 1,
+          opacity: hidden ? 0 : 1,
+          transition: {
+            duration: hidden ? 0 : undefined,
+          },
+        }}
+        exit={{
+          scale: 0,
+        }}
+        id={id}
+        className={`${
+          label === "ATTACKER" ? "bg-red-400" : "bg-blue-400"
+        } h-24 w-24 absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))] ${
+          x !== undefined ? "transition-all" : undefined
+        } ${className}`}
+        ref={ref}
+        style={
+          {
+            "--initial-x": `${initialX}px`,
+            "--initial-y": `${initialY}px`,
+            "--x": x !== undefined ? `${x}px` : undefined,
+            "--y": y !== undefined ? `${y}px` : undefined,
+          } as React.CSSProperties
+        }
+      >
+        {label}
+        {children}
+      </motion.div>
+    );
+  }
+);
 
 Object.displayName = "Object";
 
@@ -252,3 +339,27 @@ function getCollision(attackerRect: DOMRect, targets: TargetEntity[]) {
   });
   return collidedTarget;
 }
+
+const InfluenceButton = ({
+  className,
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  className: string;
+  onClick: () => void;
+}) => {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className={`${className} aspect-square opacity-0 group-hover:opacity-100 transition-opacity z-50`}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+    >
+      {children}
+    </Button>
+  );
+};
