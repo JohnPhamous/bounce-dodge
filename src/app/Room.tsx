@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import { ClientSideSuspense } from "@liveblocks/react";
 import { RoomProvider } from "../../liveblocks.config";
-import { LiveList } from "@liveblocks/client";
+import { LiveList, LiveObject } from "@liveblocks/client";
 
 export function Room({ children }: { children: ReactNode }) {
   return (
@@ -14,6 +14,8 @@ export function Room({ children }: { children: ReactNode }) {
       initialStorage={{
         targets: new LiveList([]),
         eliminatedTargets: new LiveList([]),
+        attacker: new LiveObject({ x: 0, y: 0 }),
+        gameState: "pregame",
       }}
     >
       {/* TODO loading state */}

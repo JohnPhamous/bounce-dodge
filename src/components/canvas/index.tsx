@@ -1,6 +1,7 @@
 import { GameState, TargetEntity } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useLayoutEffect, useRef, useState } from "react";
+import { useMutation, useSelf, useStorage } from "../../../liveblocks.config";
 
 export function Canvas({
   gameState,
@@ -13,6 +14,15 @@ export function Canvas({
   targets: TargetEntity[];
   onRemoveTarget: (collidedTarget: TargetEntity) => void;
 }): JSX.Element {
+  const self = useSelf();
+  const isAdmin = self.presence.username === "johnphamous";
+  const attackerPosition = useStorage((root) => root.attacker);
+  const updateAttackerPosition = useMutation(
+    ({ storage }, newPosition: { x: number; y: number }) => {
+      storage.get("attacker").update(newPosition);
+    },
+    []
+  );
   const [xDirection, setXDirection] = useState(Math.random() * 2 - 1);
   const [yDirection, setYDirection] = useState(Math.random() * 2 - 1);
   const attackerRef = useRef<HTMLDivElement>(null);
@@ -20,7 +30,7 @@ export function Canvas({
 
   // Centers the attacker in the canvas before the game starts.
   useLayoutEffect(() => {
-    if (gameState === "pregame") {
+    if (gameState === "pregame" && isAdmin) {
       if (attackerRef.current === null || canvasRef.current === null) {
         return;
       }
@@ -34,11 +44,15 @@ export function Canvas({
         x: canvasRect.width / 2 - attackerRect.width / 2,
         y: canvasRect.height / 2 - attackerRect.height / 2,
       });
+      updateAttackerPosition({
+        x: canvasRect.width / 2 - attackerRect.width / 2,
+        y: canvasRect.height / 2 - attackerRect.height / 2,
+      });
     }
-  }, [gameState]);
+  }, [gameState, isAdmin, updateAttackerPosition]);
 
   useLayoutEffect(() => {
-    if (gameState !== "playing") {
+    if (gameState !== "playing" || !isAdmin) {
       return;
     }
     let animationFrameId: number;
@@ -81,12 +95,24 @@ export function Canvas({
         x: attackerCoordinates.x + xDirection,
         y: attackerCoordinates.y + yDirection,
       });
+      updateAttackerPosition({
+        x: attackerCoordinates.x + xDirection,
+        y: attackerCoordinates.y + yDirection,
+      });
 
       animationFrameId = requestAnimationFrame(renderFunction);
     };
     renderFunction();
     return () => cancelAnimationFrame(animationFrameId);
-  }, [gameState, xDirection, yDirection, targets, onRemoveTarget]);
+  }, [
+    gameState,
+    xDirection,
+    yDirection,
+    targets,
+    onRemoveTarget,
+    updateAttackerPosition,
+    isAdmin,
+  ]);
 
   return (
     <div
@@ -115,7 +141,13 @@ export function Canvas({
         });
       }}
     >
-      <Object ref={attackerRef} label="ATTACKER" />
+      <Object
+        ref={attackerRef}
+        label="ATTACKER"
+        x={isAdmin ? undefined : attackerPosition.x}
+        y={isAdmin ? undefined : attackerPosition.y}
+        hidden={gameState !== "playing"}
+      />
       <AnimatePresence>
         {targets.map((target) => {
           return (
@@ -135,8 +167,16 @@ export function Canvas({
 
 const Object = React.forwardRef<
   HTMLDivElement,
-  { initialX?: number; initialY?: number; label?: string; id?: string }
->(({ initialX = 0, initialY = 0, label = "TARGET", id }, ref) => {
+  {
+    initialX?: number;
+    initialY?: number;
+    label?: string;
+    id?: string;
+    x?: number;
+    y?: number;
+    hidden?: boolean;
+  }
+>(({ initialX = 0, initialY = 0, label = "TARGET", id, x, y, hidden }, ref) => {
   return (
     <motion.div
       initial={{
@@ -144,6 +184,7 @@ const Object = React.forwardRef<
       }}
       animate={{
         scale: 1,
+        opacity: hidden ? 0 : 1,
       }}
       exit={{
         scale: 0,
@@ -151,12 +192,16 @@ const Object = React.forwardRef<
       id={id}
       className={`${
         label === "ATTACKER" ? "bg-red-400" : "bg-blue-400"
-      } h-24 w-24 absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))]`}
+      } h-24 w-24 absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))] ${
+        x !== undefined ? "transition-all" : undefined
+      }`}
       ref={ref}
       style={
         {
           "--initial-x": `${initialX}px`,
           "--initial-y": `${initialY}px`,
+          "--x": x !== undefined ? `${x}px` : undefined,
+          "--y": y !== undefined ? `${y}px` : undefined,
         } as React.CSSProperties
       }
     >

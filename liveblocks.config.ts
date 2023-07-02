@@ -1,4 +1,4 @@
-import { LiveList, createClient } from "@liveblocks/client";
+import { LiveList, LiveObject, createClient } from "@liveblocks/client";
 import { createRoomContext } from "@liveblocks/react";
 
 const client = createClient({
@@ -20,6 +20,8 @@ type Storage = {
     value: string;
     coordinates: { x: number; y: number };
   }>;
+  attacker: LiveObject<{ x: number; y: number }>;
+  gameState: "pregame" | "playing" | "end";
 };
 
 // Optionally, UserMeta represents static/readonly metadata on each user, as

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { GameState, TargetEntity } from "@/types";
-import React, { useState } from "react";
+import React from "react";
 import {
   useOthers,
   useUpdateMyPresence,
@@ -20,12 +20,18 @@ export function Game(): JSX.Element {
   const others = useOthers();
   const updateMyPresence = useUpdateMyPresence();
   const self = useSelf();
-  const [gameState, setGameState] = useState<GameState>("pregame");
+  const isAdmin = self.presence.username === "johnphamous";
+
+  const gameState = useStorage((root) => root.gameState);
   const targets = useStorage((root) => root.targets);
   const eliminatedTargets = useStorage((root) => root.eliminatedTargets);
+
   const addTarget = useMutation(({ storage }, newTarget: TargetEntity) => {
-    storage.get("targets").push(newTarget);
+    if (gameState === "pregame") {
+      storage.get("targets").push(newTarget);
+    }
   }, []);
+
   const eliminateTarget = useMutation(({ storage }, target: TargetEntity) => {
     const index = storage.get("targets").findIndex((t) => t.id === target.id);
     if (index !== -1) {
@@ -34,9 +40,14 @@ export function Game(): JSX.Element {
     }
   }, []);
 
+  const setGameState = useMutation(({ storage }, newGameState: GameState) => {
+    storage.set("gameState", newGameState);
+  }, []);
+
   const resetGame = useMutation(({ storage }) => {
     storage.get("targets").clear();
     storage.get("eliminatedTargets").clear();
+    setGameState("pregame");
   }, []);
 
   const onAddTarget = ({ coordinates, value }: Omit<TargetEntity, "id">) => {
@@ -116,25 +127,27 @@ export function Game(): JSX.Element {
                     onRemoveTarget={onRemoveTarget}
                   />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    onClick={() => {
-                      setGameState(
-                        gameState === "pregame" ? "playing" : "pregame"
-                      );
-                    }}
-                  >
-                    Start
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      resetGame();
-                    }}
-                    variant="destructive"
-                  >
-                    Reset
-                  </Button>
-                </div>
+                {isAdmin && (
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      onClick={() => {
+                        setGameState(
+                          gameState === "pregame" ? "playing" : "pregame"
+                        );
+                      }}
+                    >
+                      Start
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        resetGame();
+                      }}
+                      variant="destructive"
+                    >
+                      Reset
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
