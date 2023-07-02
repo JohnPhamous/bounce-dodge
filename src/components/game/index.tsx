@@ -21,7 +21,6 @@ export function Game(): JSX.Element {
   const updateMyPresence = useUpdateMyPresence();
   const self = useSelf();
   const [gameState, setGameState] = useState<GameState>("pregame");
-  //   const [targets, setTargets] = useState<TargetEntity[]>([]);
   const targets = useStorage((root) => root.targets);
   const eliminatedTargets = useStorage((root) => root.eliminatedTargets);
   const addTarget = useMutation(({ storage }, newTarget: TargetEntity) => {
