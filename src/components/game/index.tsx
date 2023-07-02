@@ -10,7 +10,10 @@ import {
   useOthers,
   useUpdateMyPresence,
   useSelf,
+  useStorage,
+  useMutation,
 } from "../../../liveblocks.config";
+import { nanoid } from "nanoid";
 import { AnimatePresence, motion } from "framer-motion";
 
 export function Game(): JSX.Element {
@@ -18,31 +21,37 @@ export function Game(): JSX.Element {
   const updateMyPresence = useUpdateMyPresence();
   const self = useSelf();
   const [gameState, setGameState] = useState<GameState>("pregame");
-  const [targets, setTargets] = useState<TargetEntity[]>([]);
-  const [eliminatedTargets, setEliminatedTargets] = useState<TargetEntity[]>(
-    []
-  );
+  //   const [targets, setTargets] = useState<TargetEntity[]>([]);
+  const targets = useStorage((root) => root.targets);
+  const eliminatedTargets = useStorage((root) => root.eliminatedTargets);
+  const addTarget = useMutation(({ storage }, newTarget: TargetEntity) => {
+    storage.get("targets").push(newTarget);
+  }, []);
+  const eliminateTarget = useMutation(({ storage }, target: TargetEntity) => {
+    const index = storage.get("targets").findIndex((t) => t.id === target.id);
+    if (index !== -1) {
+      storage.get("targets").delete(index);
+      storage.get("eliminatedTargets").push(target);
+    }
+  }, []);
 
-  const onAddTarget = ({
-    initialCoordinates,
-    value,
-  }: Omit<TargetEntity, "id">) => {
-    setTargets((prev) => [
-      ...prev,
-      //       TODO: use ID generator
-      {
-        id: Math.random().toString(),
-        initialCoordinates,
-        value: self.presence.username || "",
-      },
-    ]);
+  const resetGame = useMutation(({ storage }) => {
+    storage.get("targets").clear();
+    storage.get("eliminatedTargets").clear();
+  }, []);
+
+  const onAddTarget = ({ coordinates, value }: Omit<TargetEntity, "id">) => {
+    addTarget({
+      id: nanoid(),
+      coordinates,
+      value: nanoid(),
+      //       value: self.presence.username || "",
+    });
   };
 
-  const onEndGame = (collidedTarget: TargetEntity) => {
-    setTargets((prev) =>
-      prev.filter((target) => target.id !== collidedTarget.id)
-    );
-    setEliminatedTargets((prev) => [...prev, collidedTarget]);
+  const onRemoveTarget = (collidedTarget: TargetEntity) => {
+    console.log("remove", collidedTarget);
+    eliminateTarget(collidedTarget);
   };
 
   return (
@@ -104,8 +113,8 @@ export function Game(): JSX.Element {
                   <Canvas
                     gameState={gameState}
                     onAddTarget={onAddTarget}
-                    targets={targets}
-                    onEndGame={onEndGame}
+                    targets={targets as TargetEntity[]}
+                    onRemoveTarget={onRemoveTarget}
                   />
                 </div>
                 <div className="flex items-center space-x-2">
@@ -117,6 +126,14 @@ export function Game(): JSX.Element {
                     }}
                   >
                     Start
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      resetGame();
+                    }}
+                    variant="destructive"
+                  >
+                    Reset
                   </Button>
                 </div>
               </div>

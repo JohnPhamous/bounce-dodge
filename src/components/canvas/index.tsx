@@ -6,12 +6,12 @@ export function Canvas({
   gameState,
   onAddTarget,
   targets,
-  onEndGame,
+  onRemoveTarget,
 }: {
   gameState: GameState;
   onAddTarget: (newTarget: Omit<TargetEntity, "id">) => void;
   targets: TargetEntity[];
-  onEndGame: (collidedTarget: TargetEntity) => void;
+  onRemoveTarget: (collidedTarget: TargetEntity) => void;
 }): JSX.Element {
   const [xDirection, setXDirection] = useState(Math.random() * 2 - 1);
   const [yDirection, setYDirection] = useState(Math.random() * 2 - 1);
@@ -59,7 +59,7 @@ export function Canvas({
 
       const collidedWithTarget = getCollision(attackerRect, targets);
       if (collidedWithTarget !== undefined) {
-        onEndGame(collidedWithTarget);
+        onRemoveTarget(collidedWithTarget);
       }
 
       if (
@@ -86,7 +86,7 @@ export function Canvas({
     };
     renderFunction();
     return () => cancelAnimationFrame(animationFrameId);
-  }, [gameState, xDirection, yDirection, targets, onEndGame]);
+  }, [gameState, xDirection, yDirection, targets, onRemoveTarget]);
 
   return (
     <div
@@ -101,16 +101,16 @@ export function Canvas({
         const canvas = canvasRef.current;
         const canvasRect = canvas.getBoundingClientRect();
 
-        let initialX = clickCoordinates.x - canvasRect.left;
-        let initialY = clickCoordinates.y - canvasRect.top;
+        let x = clickCoordinates.x - canvasRect.left;
+        let y = clickCoordinates.y - canvasRect.top;
 
         // TODO: do bounds checking
 
         onAddTarget({
           value: "TODO",
-          initialCoordinates: {
-            initialX,
-            initialY,
+          coordinates: {
+            x,
+            y,
           },
         });
       }}
@@ -122,8 +122,8 @@ export function Canvas({
             <Object
               id={target.id}
               key={target.id}
-              initialX={target.initialCoordinates.initialX}
-              initialY={target.initialCoordinates.initialY}
+              initialX={target.coordinates.x}
+              initialY={target.coordinates.y}
               label={target.value}
             />
           );
