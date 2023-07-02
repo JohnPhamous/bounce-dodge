@@ -40,14 +40,22 @@ export function Canvas({
       const canvasRect = canvas.getBoundingClientRect();
       const attackerRect = attacker.getBoundingClientRect();
 
+      const xRange = canvasRect.width - attackerRect.width;
+      const yRange = canvasRect.height - attackerRect.height;
+
+      const newX = Math.random() * xRange;
+      const newY = Math.random() * yRange;
+
       setPosition(attacker, {
-        x: canvasRect.width / 2 - attackerRect.width / 2,
-        y: canvasRect.height / 2 - attackerRect.height / 2,
+        x: newX,
+        y: newY,
       });
       updateAttackerPosition({
-        x: canvasRect.width / 2 - attackerRect.width / 2,
-        y: canvasRect.height / 2 - attackerRect.height / 2,
+        x: newX,
+        y: newY,
       });
+      setYDirection(Math.random() * 2 - 1);
+      setXDirection(Math.random() * 2 - 1);
     }
   }, [gameState, isAdmin, updateAttackerPosition]);
 
@@ -185,6 +193,9 @@ const Object = React.forwardRef<
       animate={{
         scale: 1,
         opacity: hidden ? 0 : 1,
+        transition: {
+          duration: hidden ? 0 : undefined,
+        },
       }}
       exit={{
         scale: 0,
