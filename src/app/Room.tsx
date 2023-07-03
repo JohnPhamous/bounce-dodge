@@ -14,7 +14,7 @@ export function Room({ children }: { children: ReactNode }) {
       initialStorage={{
         targets: new LiveList([]),
         eliminatedTargets: new LiveList([]),
-        attacker: new LiveObject({ x: 0, y: 0 }),
+        attacker: new LiveObject({ x: 0, y: 0, color: "white" }),
         gameState: "pregame",
       }}
     >

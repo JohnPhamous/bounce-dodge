@@ -20,7 +20,7 @@ type Storage = {
     value: string;
     coordinates: { x: number; y: number };
   }>;
-  attacker: LiveObject<{ x: number; y: number }>;
+  attacker: LiveObject<{ x: number; y: number; color: string }>;
   gameState: "pregame" | "playing" | "end";
 };
 
