@@ -7,6 +7,7 @@ const client = createClient({
 
 type Presence = {
   username: string | undefined;
+  color: string;
 };
 
 type Storage = {
@@ -14,11 +15,15 @@ type Storage = {
     id: string;
     value: string;
     coordinates: { x: number; y: number };
+    color: string;
+    owner: string;
   }>;
   eliminatedTargets: LiveList<{
     id: string;
     value: string;
     coordinates: { x: number; y: number };
+    color: string;
+    owner: string;
   }>;
   attacker: LiveObject<{ x: number; y: number; color: string }>;
   gameState: "pregame" | "playing" | "end";

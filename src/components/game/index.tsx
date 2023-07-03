@@ -28,7 +28,15 @@ export function Game(): JSX.Element {
 
   const addTarget = useMutation(({ storage }, newTarget: TargetEntity) => {
     if (gameState === "pregame") {
-      storage.get("targets").push(newTarget);
+      const previousIndex = storage
+        .get("targets")
+        .findIndex((t) => t.owner === self.connectionId.toString());
+
+      if (previousIndex !== -1) {
+        storage.get("targets").set(previousIndex, newTarget);
+      } else {
+        storage.get("targets").push(newTarget);
+      }
     }
   }, []);
 
@@ -50,11 +58,18 @@ export function Game(): JSX.Element {
     setGameState("pregame");
   }, []);
 
-  const onAddTarget = ({ coordinates, value }: Omit<TargetEntity, "id">) => {
+  const onAddTarget = ({
+    coordinates,
+    value,
+    color,
+    owner,
+  }: Omit<TargetEntity, "id">) => {
     addTarget({
       id: nanoid(),
       coordinates,
       value: nanoid(),
+      color,
+      owner,
       //       value: self.presence.username || "",
     });
   };
@@ -85,6 +100,9 @@ export function Game(): JSX.Element {
                         exit={{ opacity: 0, y: 32 }}
                         key={other.connectionId}
                         className="ml-[-11px] bg-slate-500 border-2 border-slate-50 h-[32px] w-[32px] rounded-full flex items-center justify-center text-white group-hover:ml-[2px] transition-[margin] uppercase"
+                        style={{
+                          background: other.presence.color,
+                        }}
                       >
                         {other.presence.username?.slice(0, 1)}
                       </motion.div>

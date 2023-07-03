@@ -7,4 +7,6 @@ export interface TargetEntity {
     x: number;
     y: number;
   };
+  color: string;
+  owner: string;
 }

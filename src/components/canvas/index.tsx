@@ -10,8 +10,9 @@ import {
   useStorage,
 } from "../../../liveblocks.config";
 import { Button } from "@/components/ui/button";
+import styles from "./index.module.css";
 
-const COLORS = [
+const DVD_COLORS = [
   "#AE23F6",
   "#74FAFD",
   "#EF8A33",
@@ -144,7 +145,9 @@ export function Canvas({
         attackerCoordinates.x + xDirection < 0
       ) {
         setXDirection(-xDirection);
-        updateAttackerColor(COLORS[Math.floor(Math.random() * COLORS.length)]);
+        updateAttackerColor(
+          DVD_COLORS[Math.floor(Math.random() * DVD_COLORS.length)]
+        );
       }
       if (
         attackerCoordinates.y + yDirection >
@@ -152,7 +155,9 @@ export function Canvas({
         attackerCoordinates.y + yDirection < 0
       ) {
         setYDirection(-yDirection);
-        updateAttackerColor(COLORS[Math.floor(Math.random() * COLORS.length)]);
+        updateAttackerColor(
+          DVD_COLORS[Math.floor(Math.random() * DVD_COLORS.length)]
+        );
       }
 
       setPosition(attacker, {
@@ -203,6 +208,8 @@ export function Canvas({
             x,
             y,
           },
+          color: self.presence.color,
+          owner: self.connectionId.toString(),
         });
       }}
     >
@@ -268,6 +275,7 @@ export function Canvas({
               initialX={target.coordinates.x}
               initialY={target.coordinates.y}
               label={target.value}
+              color={target.color}
             />
           );
         })}
@@ -331,8 +339,9 @@ const Object = React.forwardRef<
     x?: number;
     y?: number;
     hidden?: boolean;
+    color: string;
   }
->(({ initialX = 0, initialY = 0, label, id, x, y, hidden }, ref) => {
+>(({ initialX = 0, initialY = 0, label, id, x, y, hidden, color }, ref) => {
   return (
     <motion.div
       initial={{
@@ -349,10 +358,11 @@ const Object = React.forwardRef<
         scale: 0,
       }}
       id={id}
-      className={`bg-blue-500 h-24 w-24 absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))] whitespace-break-spaces break-words p-2`}
+      className={`bg-[${color}] h-24 w-24 absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))] whitespace-break-spaces break-words p-2`}
       ref={ref}
       style={
         {
+          background: color,
           "--initial-x": `${initialX}px`,
           "--initial-y": `${initialY}px`,
           "--x": x !== undefined ? `${x}px` : undefined,
@@ -360,6 +370,7 @@ const Object = React.forwardRef<
         } as React.CSSProperties
       }
     >
+      <i className={styles.pin}></i>
       {label}
     </motion.div>
   );

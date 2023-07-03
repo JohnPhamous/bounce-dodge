@@ -4,13 +4,14 @@ import { ReactNode } from "react";
 import { ClientSideSuspense } from "@liveblocks/react";
 import { RoomProvider } from "../../liveblocks.config";
 import { LiveList, LiveObject } from "@liveblocks/client";
+import { getRandomColor } from "@/lib/colors";
 
 export function Room({ children }: { children: ReactNode }) {
   return (
     // TODO come up with random name
     <RoomProvider
       id="my-room"
-      initialPresence={{ username: "Unknown" }}
+      initialPresence={{ username: "Unknown", color: getRandomColor() }}
       initialStorage={{
         targets: new LiveList([]),
         eliminatedTargets: new LiveList([]),
