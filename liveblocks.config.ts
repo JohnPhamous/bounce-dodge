@@ -39,9 +39,18 @@ type UserMeta = {
 
 // Optionally, the type of custom events broadcast and listened to in this
 // room. Use a union for multiple events. Must be JSON-serializable.
-type RoomEvent = {
-  type: "up" | "left" | "right" | "down";
-};
+type RoomEvent =
+  | {
+      type: "influence";
+      action: "up" | "left" | "right" | "down";
+    }
+  | {
+      type: "eliminated";
+      coordinates: {
+        x: number;
+        y: number;
+      };
+    };
 
 export const {
   suspense: {

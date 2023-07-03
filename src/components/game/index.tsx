@@ -27,6 +27,8 @@ export function Game(): JSX.Element {
   const eliminatedTargets = useStorage((root) => root.eliminatedTargets);
 
   const addTarget = useMutation(({ storage }, newTarget: TargetEntity) => {
+    storage.get("targets").push(newTarget);
+    return;
     if (gameState === "pregame") {
       const previousIndex = storage
         .get("targets")
@@ -75,7 +77,6 @@ export function Game(): JSX.Element {
   };
 
   const onRemoveTarget = (collidedTarget: TargetEntity) => {
-    console.log("remove", collidedTarget);
     eliminateTarget(collidedTarget);
   };
 

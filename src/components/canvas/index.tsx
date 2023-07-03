@@ -1,6 +1,6 @@
 import { GameState, TargetEntity } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   useBroadcastEvent,
   useEventListener,
@@ -11,6 +11,12 @@ import {
 } from "../../../liveblocks.config";
 import { Button } from "@/components/ui/button";
 import styles from "./index.module.css";
+import explosion from "./explosion.gif";
+import useInterval from "@/lib/useInterval";
+import Image from "next/image";
+
+const TARGET_HEIGHT = 48;
+const TARGET_WIDTH = 96;
 
 const DVD_COLORS = [
   "#AE23F6",
@@ -49,38 +55,59 @@ export function Canvas({
     storage.get("attacker").update({ color: newColor });
   }, []);
   const [reactions, setReactions] = useState([]);
+  const [eliminatedTargetAnimations, setEliminatedTargetAnimations] = useState<
+    { timestamp: number; x: number; y: number }[]
+  >([]);
   const broadcast = useBroadcastEvent();
   const [xDirection, setXDirection] = useState(Math.random() * 2 - 1);
   const [yDirection, setYDirection] = useState(Math.random() * 2 - 1);
   const attackerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
+  useInterval(() => {
+    setEliminatedTargetAnimations((reactions) =>
+      reactions.filter((target) => target.timestamp > Date.now() - 1000)
+    );
+  }, 1000);
+
   useEventListener(({ connectionId, event }) => {
-    if (!isAdmin) {
-      return;
-    }
-    let xDelta = 0;
-    let yDelta = 0;
-    const MAGNITUDE = 0.2;
+    if (event.type === "influence") {
+      if (!isAdmin) {
+        return;
+      }
+      let xDelta = 0;
+      let yDelta = 0;
+      const MAGNITUDE = 0.2;
 
-    switch (event.type) {
-      case "up":
-        yDelta = -MAGNITUDE;
-        break;
-      case "down":
-        yDelta = MAGNITUDE;
-        break;
-      case "left":
-        xDelta = -MAGNITUDE;
-        break;
-      case "right":
-        xDelta = MAGNITUDE;
-        break;
+      switch (event.action) {
+        case "up":
+          yDelta = -MAGNITUDE;
+          break;
+        case "down":
+          yDelta = MAGNITUDE;
+          break;
+        case "left":
+          xDelta = -MAGNITUDE;
+          break;
+        case "right":
+          xDelta = MAGNITUDE;
+          break;
+      }
+
+      setXDirection((prev) => prev + xDelta);
+      setYDirection((prev) => prev + yDelta);
     }
 
-    setXDirection((prev) => prev + xDelta);
-    setYDirection((prev) => prev + yDelta);
-    console.log(connectionId, event, others);
+    if (event.type === "eliminated") {
+      setEliminatedTargetAnimations((prev) => [
+        ...prev,
+        {
+          timestamp: Date.now(),
+          x: event.coordinates.x,
+          y: event.coordinates.y,
+        },
+      ]);
+    }
   });
 
   // Centers the attacker in the canvas before the game starts.
@@ -136,6 +163,13 @@ export function Canvas({
 
       const collidedWithTarget = getCollision(attackerRect, targets);
       if (collidedWithTarget !== undefined) {
+        broadcast({
+          type: "eliminated",
+          coordinates: {
+            x: collidedWithTarget.coordinates.x,
+            y: collidedWithTarget.coordinates.y,
+          },
+        });
         onRemoveTarget(collidedWithTarget);
       }
 
@@ -182,6 +216,7 @@ export function Canvas({
     updateAttackerPosition,
     isAdmin,
     updateAttackerColor,
+    broadcast,
   ]);
 
   return (
@@ -223,7 +258,7 @@ export function Canvas({
         <InfluenceButton
           className="absolute top-0 left-0 right-0 mx-auto w-fit translate-y-[calc(-100%-6px)]"
           onClick={() => {
-            broadcast({ type: "up" });
+            broadcast({ type: "influence", action: "up" });
           }}
         >
           ☝️
@@ -231,7 +266,7 @@ export function Canvas({
         <InfluenceButton
           className="absolute top-0 bottom-0 right-0 my-auto w-fit translate-x-[calc(100%+6px)]"
           onClick={() => {
-            broadcast({ type: "right" });
+            broadcast({ type: "influence", action: "right" });
           }}
         >
           🫱
@@ -239,7 +274,7 @@ export function Canvas({
         <InfluenceButton
           className="absolute bottom-0 left-0 right-0 mx-auto w-fit translate-y-[calc(100%+6px)]"
           onClick={() => {
-            broadcast({ type: "down" });
+            broadcast({ type: "influence", action: "down" });
           }}
         >
           👇
@@ -247,7 +282,7 @@ export function Canvas({
         <InfluenceButton
           className="absolute top-0 bottom-0 left-0 my-auto w-fit translate-x-[calc(-100%-6px)]"
           onClick={() => {
-            broadcast({ type: "left" });
+            broadcast({ type: "influence", action: "left" });
           }}
         >
           🫲
@@ -280,6 +315,23 @@ export function Canvas({
           );
         })}
       </AnimatePresence>
+      {eliminatedTargetAnimations.map((animation) => {
+        const SIZE = 200;
+        return (
+          <div
+            key={animation.timestamp}
+            className="absolute"
+            style={{
+              top: `${animation.y - SIZE / 2}px`,
+              left: `${animation.x - SIZE / 2 + TARGET_WIDTH / 2}px`,
+              height: `${SIZE}px`,
+              width: `${SIZE}px`,
+            }}
+          >
+            <Image src={explosion} alt="" />
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -358,7 +410,7 @@ const Object = React.forwardRef<
         scale: 0,
       }}
       id={id}
-      className={`bg-[${color}] h-12 w-24 absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))] whitespace-break-spaces break-words p-2 text-xs text-center flex items-center justify-center`}
+      className={`bg-[${color}] h-[${TARGET_HEIGHT}px] w-[${TARGET_WIDTH}px] absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))] whitespace-break-spaces break-words p-2 text-xs text-center flex items-center justify-center`}
       ref={ref}
       style={
         {
@@ -421,7 +473,7 @@ const InfluenceButton = ({
     <Button
       variant="ghost"
       size="icon"
-      className={`${className} aspect-square opacity-0 group-hover:opacity-100 transition-opacity z-50`}
+      className={`${className} aspect-square opacity-0 group-hover:opacity-100 transition-opacity z-50 select-none`}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
