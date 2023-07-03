@@ -67,7 +67,7 @@ export function Game(): JSX.Element {
     addTarget({
       id: nanoid(),
       coordinates,
-      value: nanoid(),
+      value: self.presence.username || "",
       color,
       owner,
       //       value: self.presence.username || "",
@@ -127,13 +127,18 @@ export function Game(): JSX.Element {
         <div className="container h-full py-6">
           <div className="grid h-full items-stretch gap-6 md:grid-cols-[1fr_200px]">
             <div className="hidden flex-col space-y-4 sm:flex md:order-2">
-              <div>TODO TIMER {gameState === "playing" ? "PLAYING" : ""}</div>
-              <div>
-                {eliminatedTargets.map((target) => {
-                  // todo add time
-                  return <div key={target.id}>☠️ {target.value} 12s</div>;
-                })}
-              </div>
+              {gameState === "playing" ? (
+                <ul>
+                  {eliminatedTargets.map((target) => {
+                    return <li key={target.id}>☠️ {target.value}</li>;
+                  })}
+                </ul>
+              ) : (
+                <div>
+                  Type your username ☝️ then click on the board. <br />
+                  👈
+                </div>
+              )}
             </div>
             <div className="md:order-1">
               <div className="flex h-full flex-col space-y-4">

@@ -73,6 +73,9 @@ dependencies:
   typescript:
     specifier: 5.1.6
     version: 5.1.6
+  unique-names-generator:
+    specifier: ^4.7.1
+    version: 4.7.1
 
 packages:
 
@@ -2783,6 +2786,11 @@ packages:
       has-bigints: 1.0.2
       has-symbols: 1.0.3
       which-boxed-primitive: 1.0.2
+    dev: false
+
+  /unique-names-generator@4.7.1:
+    resolution: {integrity: sha512-lMx9dX+KRmG8sq6gulYYpKWZc9RlGsgBR6aoO8Qsm3qvkSJ+3rAymr+TnV8EDMrIrwuFJ4kruzMWM/OpYzPoow==}
+    engines: {node: '>=8'}
     dev: false
 
   /untildify@4.0.0:

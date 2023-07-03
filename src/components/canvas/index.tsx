@@ -358,7 +358,7 @@ const Object = React.forwardRef<
         scale: 0,
       }}
       id={id}
-      className={`bg-[${color}] h-24 w-24 absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))] whitespace-break-spaces break-words p-2`}
+      className={`bg-[${color}] h-12 w-24 absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))] whitespace-break-spaces break-words p-2 text-xs text-center flex items-center justify-center`}
       ref={ref}
       style={
         {

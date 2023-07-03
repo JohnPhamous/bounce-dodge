@@ -5,13 +5,29 @@ import { ClientSideSuspense } from "@liveblocks/react";
 import { RoomProvider } from "../../liveblocks.config";
 import { LiveList, LiveObject } from "@liveblocks/client";
 import { getRandomColor } from "@/lib/colors";
+import {
+  uniqueNamesGenerator,
+  Config,
+  adjectives,
+  animals,
+} from "unique-names-generator";
+
+const customConfig: Config = {
+  dictionaries: [adjectives, animals],
+  separator: " ",
+  length: 2,
+  style: "capital",
+};
 
 export function Room({ children }: { children: ReactNode }) {
   return (
     // TODO come up with random name
     <RoomProvider
       id="my-room"
-      initialPresence={{ username: "Unknown", color: getRandomColor() }}
+      initialPresence={{
+        username: uniqueNamesGenerator(customConfig),
+        color: getRandomColor(),
+      }}
       initialStorage={{
         targets: new LiveList([]),
         eliminatedTargets: new LiveList([]),
@@ -20,9 +36,7 @@ export function Room({ children }: { children: ReactNode }) {
       }}
     >
       {/* TODO loading state */}
-      <ClientSideSuspense fallback={<div>Loading…</div>}>
-        {() => children}
-      </ClientSideSuspense>
+      <ClientSideSuspense fallback={null}>{() => children}</ClientSideSuspense>
     </RoomProvider>
   );
 }
