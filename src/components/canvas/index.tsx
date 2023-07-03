@@ -54,7 +54,7 @@ export function Canvas({
   const [playExplosion] = useSound("/explosion.mp3", {
     volume: 0.1,
   });
-  const [playAmbient, { stop: stopAmbient }] = useSound("/ambient.mp3", {
+  const [playAmbient] = useSound("/ambient.mp3", {
     volume: 0.3,
   });
   const [playPop] = useSound("/pop.mp3", {
@@ -122,12 +122,8 @@ export function Canvas({
   });
 
   useEffect(() => {
-    if (gameState === "playing") {
-      playAmbient();
-    } else {
-      stopAmbient();
-    }
-  }, [gameState, playAmbient, stopAmbient]);
+    playAmbient();
+  }, [playAmbient]);
 
   // Centers the attacker in the canvas before the game starts.
   useLayoutEffect(() => {
