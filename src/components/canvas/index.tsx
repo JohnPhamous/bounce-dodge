@@ -14,6 +14,7 @@ import styles from "./index.module.css";
 import explosion from "./explosion.gif";
 import useInterval from "@/lib/useInterval";
 import Image from "next/image";
+import useSound from "use-sound";
 
 const TARGET_HEIGHT = 48;
 const TARGET_WIDTH = 96;
@@ -50,6 +51,15 @@ export function Canvas({
     },
     []
   );
+  const [playExplosion] = useSound("/explosion.mp3", {
+    volume: 0.1,
+  });
+  const [playAmbient, { stop: stopAmbient }] = useSound("/ambient.mp3", {
+    volume: 0.3,
+  });
+  const [playPop] = useSound("/pop.mp3", {
+    volume: 0.2,
+  });
 
   const updateAttackerColor = useMutation(({ storage }, newColor: string) => {
     storage.get("attacker").update({ color: newColor });
@@ -99,6 +109,7 @@ export function Canvas({
     }
 
     if (event.type === "eliminated") {
+      playExplosion();
       setEliminatedTargetAnimations((prev) => [
         ...prev,
         {
@@ -109,6 +120,14 @@ export function Canvas({
       ]);
     }
   });
+
+  useEffect(() => {
+    if (gameState === "playing") {
+      playAmbient();
+    } else {
+      stopAmbient();
+    }
+  }, [gameState, playAmbient, stopAmbient]);
 
   // Centers the attacker in the canvas before the game starts.
   useLayoutEffect(() => {
@@ -178,6 +197,7 @@ export function Canvas({
           canvasRect.width - attackerRect.width ||
         attackerCoordinates.x + xDirection < 0
       ) {
+        playPop();
         setXDirection(-xDirection);
         updateAttackerColor(
           DVD_COLORS[Math.floor(Math.random() * DVD_COLORS.length)]
@@ -188,6 +208,7 @@ export function Canvas({
           canvasRect.height - attackerRect.height ||
         attackerCoordinates.y + yDirection < 0
       ) {
+        playPop();
         setYDirection(-yDirection);
         updateAttackerColor(
           DVD_COLORS[Math.floor(Math.random() * DVD_COLORS.length)]
@@ -217,6 +238,7 @@ export function Canvas({
     isAdmin,
     updateAttackerColor,
     broadcast,
+    playPop,
   ]);
 
   return (
@@ -253,6 +275,13 @@ export function Canvas({
         });
       }}
     >
+      <button
+        onClick={() => {
+          playExplosion();
+        }}
+      >
+        click
+      </button>
       <AttackerObject
         ref={attackerRef}
         x={isAdmin ? undefined : attackerPosition.x}
