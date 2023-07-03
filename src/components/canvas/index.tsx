@@ -235,7 +235,12 @@ export function Canvas({
         let x = clickCoordinates.x - canvasRect.left;
         let y = clickCoordinates.y - canvasRect.top;
 
-        // TODO: do bounds checking
+        if (x + TARGET_WIDTH >= canvasRect.width) {
+          x = canvasRect.width - TARGET_WIDTH;
+        }
+        if (y + TARGET_HEIGHT >= canvasRect.height) {
+          y = canvasRect.height - TARGET_HEIGHT;
+        }
 
         onAddTarget({
           value: "TODO",
