@@ -211,6 +211,7 @@ export function Canvas({
         x={isAdmin ? undefined : attackerPosition.x}
         y={isAdmin ? undefined : attackerPosition.y}
         hidden={gameState !== "playing"}
+        isAdmin={isAdmin}
       >
         <InfluenceButton
           className="absolute top-0 left-0 right-0 mx-auto w-fit translate-y-[calc(-100%-6px)]"
@@ -283,8 +284,9 @@ const AttackerObject = React.forwardRef<
     y?: number;
     hidden?: boolean;
     children?: React.ReactNode;
+    isAdmin: boolean;
   }
->(({ id, x, y, hidden, children }, ref) => {
+>(({ id, x, y, hidden, children, isAdmin }, ref) => {
   return (
     <motion.div
       initial={{
@@ -301,7 +303,9 @@ const AttackerObject = React.forwardRef<
         scale: 0,
       }}
       id={id}
-      className={`group absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))]`}
+      className={`group absolute top-[var(--y,var(--initial-y))] left-[var(--x,var(--initial-x))] ${
+        !isAdmin ? "transition-all ease-linear duration-100" : ""
+      }`}
       ref={ref}
       style={
         {
