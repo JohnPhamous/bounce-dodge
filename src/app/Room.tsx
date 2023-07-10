@@ -21,12 +21,12 @@ const customConfig: Config = {
 
 export function Room({ children }: { children: ReactNode }) {
   return (
-    // TODO come up with random name
     <RoomProvider
       id="my-room"
       initialPresence={{
         username: uniqueNamesGenerator(customConfig),
         color: getRandomColor(),
+        isAdmin: false,
       }}
       initialStorage={{
         targets: new LiveList([]),
@@ -35,7 +35,6 @@ export function Room({ children }: { children: ReactNode }) {
         gameState: "pregame",
       }}
     >
-      {/* TODO loading state */}
       <ClientSideSuspense fallback={null}>{() => children}</ClientSideSuspense>
     </RoomProvider>
   );

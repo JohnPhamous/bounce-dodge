@@ -8,6 +8,7 @@ const client = createClient({
 type Presence = {
   username: string | undefined;
   color: string;
+  isAdmin: boolean;
 };
 
 type Storage = {

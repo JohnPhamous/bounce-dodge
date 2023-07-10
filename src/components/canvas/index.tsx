@@ -42,8 +42,7 @@ export function Canvas({
   onRemoveTarget: (collidedTarget: TargetEntity) => void;
 }): JSX.Element {
   const self = useSelf();
-  const others = useOthers();
-  const isAdmin = self.presence.username === "johnphamous";
+  const isAdmin = self.presence.isAdmin;
   const attackerPosition = useStorage((root) => root.attacker);
   const updateAttackerPosition = useMutation(
     ({ storage }, newPosition: { x: number; y: number }) => {
@@ -64,7 +63,6 @@ export function Canvas({
   const updateAttackerColor = useMutation(({ storage }, newColor: string) => {
     storage.get("attacker").update({ color: newColor });
   }, []);
-  const [reactions, setReactions] = useState([]);
   const [eliminatedTargetAnimations, setEliminatedTargetAnimations] = useState<
     { timestamp: number; x: number; y: number }[]
   >([]);
