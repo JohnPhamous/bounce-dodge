@@ -1,5 +1,7 @@
 # Bounce Dodge
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FJohnPhamous%2Fbounce-dodge&env=NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY&envDescription=The%20Liveblocks%20project%20Public%20Key&envLink=https%3A%2F%2Fliveblocks.io%2Fblog%2Fclient-side-only-mode-with-public-key&project-name=bounce-dodge)
+
 ## Getting Started
 
 1. You will need a [Liveblocks account](https://liveblocks.io/)
