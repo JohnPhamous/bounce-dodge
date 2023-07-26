@@ -10,3 +10,5 @@ export interface TargetEntity {
   color: string;
   owner: string;
 }
+
+export type GameEffects = "shake" | "shake-more" | "evolution";

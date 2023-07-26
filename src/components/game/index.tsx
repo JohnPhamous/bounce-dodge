@@ -4,7 +4,7 @@ import { Canvas } from "@/components/canvas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { GameState, TargetEntity } from "@/types";
+import { GameEffects, GameState, TargetEntity } from "@/types";
 import React, { useEffect } from "react";
 import {
   useOthers,
@@ -80,12 +80,14 @@ export function Game(): JSX.Element {
 
   // Designate the 1st person joining the room as the admin.
   useEffect(() => {
-    if (others.length === 0) {
+    if (others.length === 0 || self.presence.username === "johnphamous") {
       updateMyPresence({ isAdmin: true });
     }
     // Only run on app mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const effects = getGameEffects(gameState, targets.length);
 
   return (
     <>
@@ -150,8 +152,13 @@ export function Game(): JSX.Element {
             </div>
             <div className="md:order-1">
               <div className="flex flex-col h-full space-y-4">
-                <div className="min-h-[400px] flex-1 md:min-h-[700px] lg:min-h-[700px]">
+                <div
+                  className={`min-h-[400px] flex-1 md:min-h-[700px] lg:min-h-[700px] ${
+                    effects === "shake" ? "animate-shake" : ""
+                  }${effects === "shake-more" ? "animate-shakeMore" : ""}`}
+                >
                   <Canvas
+                    gameEffects={effects}
                     gameState={gameState}
                     onAddTarget={onAddTarget}
                     targets={targets as TargetEntity[]}
@@ -187,3 +194,27 @@ export function Game(): JSX.Element {
     </>
   );
 }
+
+const getGameEffects = (
+  gameState: GameState,
+  targetsRemaining: number
+): null | GameEffects => {
+  if (gameState !== "playing") {
+    return null;
+  }
+
+  switch (targetsRemaining) {
+    case 5:
+      return "shake";
+    case 4:
+      return "shake-more";
+    case 3:
+    case 2:
+    case 1:
+    case 0:
+      return "evolution";
+
+    default:
+      return null;
+  }
+};
