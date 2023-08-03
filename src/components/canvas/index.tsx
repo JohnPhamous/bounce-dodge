@@ -59,6 +59,7 @@ export function Canvas({
   });
   const [playAmbient] = useSound("/ambient.mp3", {
     volume: 0.3,
+    loop: true,
   });
   const [playPop] = useSound("/pop.mp3", {
     volume: 0.2,
