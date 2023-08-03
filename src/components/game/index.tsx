@@ -159,14 +159,14 @@ export function Game(): JSX.Element {
                   })}
                 </ul>
               ) : (
-                <div>
+                <div className="inline-flex items-center px-2 py-1 font-medium text-red-700 rounded-md text-md bg-red-50 ring-1 ring-inset ring-red-600/10">
                   Type your username ☝️ then click on the board. <br />
                   👈
                 </div>
               )}
             </div>
             <div className="md:order-1">
-              <div className="flex flex-col h-full space-y-4">
+              <div className="flex flex-col h-full space-y-2">
                 <div
                   className={`min-h-[400px] flex-1 md:min-h-[700px] lg:min-h-[700px] ${
                     effects === "shake" ? "animate-shake" : ""
@@ -180,27 +180,34 @@ export function Game(): JSX.Element {
                     onRemoveTarget={onRemoveTarget}
                   />
                 </div>
-                {isAdmin && (
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      onClick={() => {
-                        setGameState(
-                          gameState === "pregame" ? "playing" : "pregame"
-                        );
-                      }}
-                    >
-                      Start
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        resetGame();
-                      }}
-                      variant="destructive"
-                    >
-                      Reset
-                    </Button>
+                <div className="flex items-center">
+                  {isAdmin && (
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        onClick={() => {
+                          setGameState(
+                            gameState === "pregame" ? "playing" : "pregame"
+                          );
+                        }}
+                      >
+                        Start
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          resetGame();
+                        }}
+                        variant="destructive"
+                      >
+                        Reset
+                      </Button>
+                    </div>
+                  )}
+                  <div className="ml-auto -translate-y-2 text-slate-500">
+                    <p>
+                      {targets.length}/{others.length + 1} Ready
+                    </p>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
