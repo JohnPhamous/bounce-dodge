@@ -64,13 +64,18 @@ export function Game(): JSX.Element {
     color,
     owner,
   }: Omit<TargetEntity, "id">) => {
+    let name = self.presence.username;
+    if (name === "" || name === undefined) {
+      name = "USING AN EMPTY STRING IS NOT ALLOWED 😈";
+    } else if (name.length < 3) {
+      name = "YOUR NAME NEEDS TO BE MORE THAN 3 CHARACTERS LONG";
+    }
     addTarget({
       id: nanoid(),
       coordinates,
-      value: self.presence.username || "I'M TRYING TO ABUSE A BUG",
+      value: name,
       color,
       owner,
-      //       value: self.presence.username || "",
     });
   };
 
