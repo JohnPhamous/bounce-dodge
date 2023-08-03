@@ -67,7 +67,7 @@ export function Game(): JSX.Element {
     addTarget({
       id: nanoid(),
       coordinates,
-      value: self.presence.username || "",
+      value: self.presence.username || "I'M TRYING TO ABUSE A BUG",
       color,
       owner,
       //       value: self.presence.username || "",
