@@ -128,6 +128,17 @@ export function Game(): JSX.Element {
                       </motion.div>
                     );
                   })}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, y: 32 }}
+                  className="ml-[-11px] bg-slate-500 border-2 border-slate-50 h-[32px] w-[32px] rounded-full flex items-center justify-center text-white transition-[margin] uppercase"
+                  style={{
+                    background: self.presence.color,
+                  }}
+                >
+                  {self.presence.username?.slice(0, 1)}
+                </motion.div>
               </AnimatePresence>
               {others.length > 30 && (
                 <p className="ml-1 mr-2 text-xs text-slate-500">
