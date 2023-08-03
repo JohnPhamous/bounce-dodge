@@ -22,7 +22,7 @@ const customConfig: Config = {
 export function Room({ children }: { children: ReactNode }) {
   return (
     <RoomProvider
-      id="my-room"
+      id="room"
       initialPresence={{
         username: uniqueNamesGenerator(customConfig),
         color: getRandomColor(),
