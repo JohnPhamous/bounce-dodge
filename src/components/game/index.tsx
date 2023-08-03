@@ -106,7 +106,12 @@ export function Game(): JSX.Element {
             <div className="flex items-center group">
               <AnimatePresence presenceAffectsLayout mode="popLayout">
                 {others
-                  .filter((other) => other.presence.username !== undefined)
+                  .filter(
+                    (other) =>
+                      other.presence.username !== undefined &&
+                      other.presence.username !== ""
+                  )
+                  .slice(0, 30)
                   .map((other) => {
                     return (
                       <motion.div
@@ -114,7 +119,7 @@ export function Game(): JSX.Element {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, y: 32 }}
                         key={other.connectionId}
-                        className="ml-[-11px] bg-slate-500 border-2 border-slate-50 h-[32px] w-[32px] rounded-full flex items-center justify-center text-white group-hover:ml-[2px] transition-[margin] uppercase"
+                        className="ml-[-11px] bg-slate-500 border-2 border-slate-50 h-[32px] w-[32px] rounded-full flex items-center justify-center text-white transition-[margin] uppercase"
                         style={{
                           background: other.presence.color,
                         }}
@@ -124,6 +129,11 @@ export function Game(): JSX.Element {
                     );
                   })}
               </AnimatePresence>
+              {others.length > 30 && (
+                <p className="ml-1 mr-2 text-xs text-slate-500">
+                  +{others.length - 30} others
+                </p>
+              )}
             </div>
             <div className="flex flex-row items-center gap-4">
               <Input
