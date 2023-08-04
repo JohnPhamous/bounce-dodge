@@ -79,9 +79,9 @@ export function Canvas({
 
   useInterval(() => {
     setEliminatedTargetAnimations((reactions) =>
-      reactions.filter((target) => target.timestamp > Date.now() - 1000)
+      reactions.filter((target) => target.timestamp > Date.now() - 500)
     );
-  }, 1000);
+  }, 500);
 
   useEventListener(({ connectionId, event }) => {
     if (event.type === "influence") {
@@ -281,13 +281,6 @@ export function Canvas({
         });
       }}
     >
-      <button
-        onClick={() => {
-          playExplosion();
-        }}
-      >
-        click
-      </button>
       <AttackerObject
         ref={attackerRef}
         x={isAdmin ? undefined : attackerPosition.x}
