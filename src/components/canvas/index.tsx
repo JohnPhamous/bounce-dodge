@@ -240,6 +240,13 @@ export function Canvas({
     playPop,
   ]);
 
+  useEffect(() => {
+    if (gameEffects === "evolution") {
+      setXDirection((prev) => (prev % 1) + 3);
+      setYDirection((prev) => (prev % 1) + 3);
+    }
+  }, [gameEffects]);
+
   return (
     <div
       className="bg-[#111111] h-full w-full relative"
@@ -336,7 +343,7 @@ export function Canvas({
 
         {gameEffects === "evolution" && (
           <>
-            <div className="absolute inset-0">
+            <div className="absolute inset-0 select-none">
               <div className="relative left-2 -top-4">
                 <Image src={eyes} alt="" width={80} />
               </div>
